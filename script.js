@@ -131,11 +131,6 @@ let calculateCurveArray = (params, step_x) => { // make array filled with points
   curvePoint.vx = rejectVelocity.vx; // vx
   curvePoint.vy = rejectVelocity.vy; // vy
 
-  /*pointsArray[0] = curvePoint.x;
-  pointsArray[1] = curvePoint.y;
-  pointsArray[2] = curvePoint.vx;
-  pointsArray[3] = curvePoint.vy;*/
-
   do {
     tt += pushForce; // параметрическое время
     pointsArray.push(curvePoint.x);
@@ -255,9 +250,9 @@ $(document).ready(function() {
     }
     let pos = $(this).offset();  // координаты верхней правой точки мяча
 
-    if(timerId !== undefined) { // мяч в движении
+    /*if(timerId !== undefined) { // мяч в движении
       clearInterval(timerId);
-    }
+    }*/
 
     findBallPosition(ballElement);
     centerCoords.x = ballObject.centerX;
