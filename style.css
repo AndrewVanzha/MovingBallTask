@@ -20,18 +20,10 @@ h1 {
   margin: 0;
   text-align: center;
 }
-.leftscore-box {
-  background-color: lightseagreen;
-}
-.rightscore-box {
-  background-color: lightgreen;
-}
-.leftscore,
-.rightscore {
-  display: none;
-  color: red;
-  font-weight: 800;
-  background-color: inherit;
+.subheader {
+  padding: 5px 15px;
+  background-color: bisque;
+  text-align: center;
 }
 .football {
   position: relative;
@@ -41,7 +33,7 @@ h1 {
 .football .field-square {
   position: relative;
   width: 100%;
-  height: calc(100vh - 170px);
+  height: calc(100vh - 200px);
   background-color: aquamarine;
 }
 .football .ball-position {
@@ -53,7 +45,7 @@ h1 {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background-color: var(--purple);
+  background-color: var(--red);
 }
 /*
 @media (max-width: 992px) {
