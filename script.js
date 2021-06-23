@@ -131,10 +131,10 @@ let calculateCurveArray = (params, step_x) => { // make array filled with points
   curvePoint.vx = rejectVelocity.vx; // vx
   curvePoint.vy = rejectVelocity.vy; // vy
 
-  pointsArray[0] = curvePoint.x;
+  /*pointsArray[0] = curvePoint.x;
   pointsArray[1] = curvePoint.y;
   pointsArray[2] = curvePoint.vx;
-  pointsArray[3] = curvePoint.vy;
+  pointsArray[3] = curvePoint.vy;*/
 
   do {
     tt += pushForce; // параметрическое время
@@ -147,10 +147,10 @@ let calculateCurveArray = (params, step_x) => { // make array filled with points
     curvePoint.x = params.x0 + params.v0 * params.cosF * tt; // x0 + (v0*sinF)*t
     curvePoint.y = params.h0;
     curvePoint.y = curvePoint.y - params.v0 * params.sinF * tt;
-    curvePoint.y = curvePoint.y + gg * tt * tt / 2; // h0 + (v0*sinF)*t - g*t*t/2
+    curvePoint.y = curvePoint.y + gg * tt * tt / 2; // h0 - (v0*sinF)*t + g*t*t/2
 
     curvePoint.vx = params.v0 * params.cosF;  // (v0 * cosF)
-    curvePoint.vy = params.v0 * params.sinF + gg * tt;  // (v0*sinF) - g*t
+    curvePoint.vy = -params.v0 * params.sinF + gg * tt;  // -(v0*sinF) + g*t
 
     ii += 1;
     if(curvePoint.x <= gridX0) {
