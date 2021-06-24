@@ -58,6 +58,9 @@ let putBallOnPosition = (obj) => { // put ball on initial position
   ballObject.centerY = (fieldObject.borderBottom - fieldObject.borderTop) * .5 + fieldObject.borderTop;
   ballObject.currentY = ballObject.centerY - ballObject.radius;
   $(obj).offset({top: ballObject.currentY, left: ballObject.currentX});
+
+  $('.ping-message').offset({top: ballObject.centerY, left: ballObject.centerX}); // устанавливаю координаты баннера
+
   return ballObject;
 }
 
@@ -96,7 +99,7 @@ let findCurvePushParams = (pushCoords, centerCoords) => { // find initial push p
   return params;
 }
 
-function calculateNextStep (oldPoint, params, step_x) { // рассчитываю следующую итерацию
+let calculateNextStep = (oldPoint) => { // рассчитываю следующую итерацию
   let curvePoint = {
     'x': 0,
     'y': 0,
@@ -152,6 +155,17 @@ function calculateNextStep (oldPoint, params, step_x) { // рассчитыва�
   return curvePoint;
 }
 
+let makePing = (clickCoords) => { // высвечиваю надпись на время в заданном месте
+  let message = document.querySelector('.ping-message');
+  console.log('makePing');
+  message.classList.add('message-show');
+  $(message).offset({top: clickCoords.y, left: clickCoords.x});
+  setTimeout(() => {
+    message.classList.remove('message-show');
+  }, 4000);
+
+}
+
 let trackBallMovement = (obj, curvePoint) => { // render ball movement
   $(obj).offset({top: curvePoint.y-ballObject.radius, left: curvePoint.x-ballObject.radius});
 }
@@ -180,7 +194,7 @@ let startMoveBall = (obj, clickCoords, centerCoords) => { // движение п
       console.log('render expired');
       clearInterval(timerId);
     } else {
-      currentPoint = calculateNextStep(currentPoint, parabParams, stepX);
+      currentPoint = calculateNextStep(currentPoint);
       trackBallMovement(obj, currentPoint);
       console.log('move');
     }
@@ -218,17 +232,17 @@ $(document).ready(function() {
     let pos = $(this).offset();  // координаты верхней правой точки мяча
     $('.duration').val(duration);
     $('.smooth').val(tt);
-    if(timerId !== undefined) { // мяч в движении
+    if(timerId !== undefined) { // мяч уже в движении
       clearInterval(timerId);
       console.log('suspend');
       stopMove = true;
-      setTimeout(()=>{
+      setTimeout(() => {
         stopMove = false;
         $('.stop-button').click(function() { // остановка движения
           clearInterval(timerId);
           console.log('stop');
           stopMove = true;
-          setTimeout(()=>{
+          setTimeout(() => {
             stopMove = false;
           }, 100);
         });
@@ -236,15 +250,16 @@ $(document).ready(function() {
         findBallPosition(ballElement);
         centerCoords.x = ballObject.centerX;
         centerCoords.y = ballObject.centerY;
+        makePing(clickCoords);
         startMoveBall(ballElement, clickCoords, centerCoords);
   
       }, 100);
-    } else {
+    } else {   // первый толчок
       $('.stop-button').click(function() { // остановка движения
         clearInterval(timerId);
         console.log('stop');
         stopMove = true;
-        setTimeout(()=>{
+        setTimeout(() => {
           stopMove = false;
         }, 2000);
       });
@@ -253,6 +268,7 @@ $(document).ready(function() {
       console.log(ballObject);
       centerCoords.x = ballObject.centerX;
       centerCoords.y = ballObject.centerY;
+      makePing(clickCoords);
       startMoveBall(ballElement, clickCoords, centerCoords);
   
     }
