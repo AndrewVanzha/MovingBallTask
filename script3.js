@@ -17,6 +17,11 @@ let ballVelocity = new Vector();
 let barrierT1 = new Vector(200, 200); // координаты точек треугольника - препятствия
 let barrierT2 = new Vector(50, 300); 
 let barrierT3 = new Vector(300, 400); 
+let barrierObject = {
+  'T1': new Vector,
+  'T2': new Vector,
+  'T3': new Vector,
+}
 let rejectVelocity = {
   'vx': 0,
   'vy': 0,
@@ -39,6 +44,7 @@ let detectField = (obj) => { // obtain field grids
   fieldObject.borderRight = size.right;
   fieldObject.borderTop = size.top;
   fieldObject.borderBottom = size.bottom;
+  console.log(fieldObject);
   return size;
 }
 
@@ -65,15 +71,7 @@ let putBallOnPosition = (obj) => { // put ball on initial position
 }
 
 let putTriangleOnPosition = (obj) => {
-  let barrierObject = {
-    'x1': 0,
-    'y1': 0,
-    'x2': 0,
-    'y2': 0,
-    'x3': 0,
-    'y3': 0,
-  };
-    let ctx = obj.getContext("2d"); // canvas element
+  let ctx = obj.getContext("2d"); // canvas element
   ctx.strokeStyle = "crimson";
 
   ctx.beginPath();
@@ -87,12 +85,12 @@ let putTriangleOnPosition = (obj) => {
   ctx.closePath();
   ctx.stroke();
 
-  barrierObject.x1 = barrierT1.x;
-  barrierObject.y1 = barrierT1.y;
-  barrierObject.x2 = barrierT2.x;
-  barrierObject.y2 = barrierT2.y;
-  barrierObject.x3 = barrierT3.x;
-  barrierObject.y3 = barrierT3.y;
+  barrierObject.T1.x = barrierT1.x + fieldObject.borderLeft;
+  barrierObject.T1.y = barrierT1.y + fieldObject.borderTop;
+  barrierObject.T2.x = barrierT2.x + fieldObject.borderLeft;
+  barrierObject.T2.y = barrierT2.y + fieldObject.borderTop;
+  barrierObject.T3.x = barrierT3.x + fieldObject.borderLeft;
+  barrierObject.T3.y = barrierT3.y + fieldObject.borderTop;
   return barrierObject;
 }
 
@@ -137,62 +135,82 @@ let findCurvePushParams = (pushCoords, centerCoords) => { // find initial push p
 let findCollision = (newParticle, oldParticle) => {
   let oldBallVector = new Vector(oldParticle.x, oldParticle.y);
   let newBallVector = new Vector(newParticle.x, newParticle.y);
-  let aux = new Vector();
-  const eps = .009;
+  let va = new Vector();
+  let vb = new Vector();
+  let vc = new Vector();
+  const eps = 150;
   let closeToBorder;
   let ballPosition;
+  let aux;
 
   // приближение к барьеру T1 - T2
-  closeToBorder = crossTriangleBorder(oldBallVector, barrierT1, barrierT2);  // критерий умножения векторов
-  closeToBorder -= crossTriangleBorder(newBallVector, barrierT1, barrierT2);
+  va = subsractVectorToVector(newBallVector, barrierObject.T1);   // критерий умножения векторов
+  vb = subsractVectorToVector(barrierObject.T2, newBallVector);
+  aux = vectorMultiplyVectorToVector(va, vb);
+  closeToBorder = aux > 0? aux : -aux;
+  //console.log(barrierObject.T1);
+  //console.log(newBallVector);
+  //console.log(closeToBorder);
 
-  aux = subsractVectorToVector(barrierT2, barrierT1);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(subsractVectorToVector(newBallVector, barrierT1), aux);
-  ballPosition *= scalarMultiplyVectorToVector(subsractVectorToVector(barrierT2, newBallVector), aux);
+  vc = subsractVectorToVector(barrierObject.T2, barrierObject.T1);  // критерий знака скалярного произведения
+  ballPosition = scalarMultiplyVectorToVector(va, vc);
+  ballPosition *= scalarMultiplyVectorToVector(vb, vc);
 
   if(closeToBorder <= eps && ballPosition >= 0) {
     // намечается пересечение барьера T1 - T2
+    console.log('T1 - T2');
     console.log(closeToBorder);
     console.log(ballPosition);
-    console.log('T1 - T2');
+    console.log(newParticle);
+    console.log(barrierObject.T1);
+    console.log(barrierObject.T2);
     clearInterval(timerId);
     stopMove = true;
   }
 
   // приближение к барьеру T2 - T3
-  closeToBorder = crossTriangleBorder(oldBallVector, barrierT2, barrierT3);  // критерий умножения векторов
-  closeToBorder -= crossTriangleBorder(newBallVector, barrierT2, barrierT3);
+  va = subsractVectorToVector(newBallVector, barrierObject.T2);   // критерий умножения векторов
+  vb = subsractVectorToVector(barrierObject.T3, newBallVector);
+  aux = vectorMultiplyVectorToVector(va, vb);
+  closeToBorder = aux > 0? aux : -aux;
 
-  aux = subsractVectorToVector(barrierT3, barrierT2);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(subsractVectorToVector(newBallVector, barrierT2), aux);
-  ballPosition *= scalarMultiplyVectorToVector(subsractVectorToVector(barrierT3, newBallVector), aux);
+  vc = subsractVectorToVector(barrierObject.T3, barrierObject.T2);  // критерий знака скалярного произведения
+  ballPosition = scalarMultiplyVectorToVector(va, vc);
+  ballPosition *= scalarMultiplyVectorToVector(vb, vc);
 
   if(closeToBorder <= eps && ballPosition >= 0) {
     // намечается пересечение барьера T2 - T3
+    console.log('T2 - T3');
     console.log(closeToBorder);
     console.log(ballPosition);
-    console.log('T2 - T3');
+    console.log(newParticle);
+    console.log(barrierObject.T2);
+    console.log(barrierObject.T3);
     clearInterval(timerId);
     stopMove = true;
   }
 
   // приближение к барьеру T3 - T1
-  closeToBorder = crossTriangleBorder(oldBallVector, barrierT3, barrierT1);  // критерий умножения векторов
-  closeToBorder -= crossTriangleBorder(newBallVector, barrierT3, barrierT1);
+  va = subsractVectorToVector(newBallVector, barrierObject.T3);   // критерий умножения векторов
+  vb = subsractVectorToVector(barrierObject.T1, newBallVector);
+  aux = vectorMultiplyVectorToVector(va, vb);
+  closeToBorder = aux > 0? aux : -aux;
 
-  aux = subsractVectorToVector(barrierT1, barrierT3);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(subsractVectorToVector(newBallVector, barrierT3), aux);
-  ballPosition *= scalarMultiplyVectorToVector(subsractVectorToVector(barrierT1, newBallVector), aux);
+  vc = subsractVectorToVector(barrierObject.T1, barrierObject.T3);  // критерий знака скалярного произведения
+  ballPosition = scalarMultiplyVectorToVector(va, vc);
+  ballPosition *= scalarMultiplyVectorToVector(vb, vc);
 
   if(closeToBorder <= eps && ballPosition >= 0) {
     // намечается пересечение барьера T3 - T1
+    console.log('T3 - T1');
     console.log(closeToBorder);
     console.log(ballPosition);
-    console.log('T3 - T1');
+    console.log(newParticle);
+    console.log(barrierObject.T2);
+    console.log(barrierObject.T3);
     clearInterval(timerId);
     stopMove = true;
   }
-
 }
 
 let calculateNextStep = (oldParticle) => { // рассчитываю следующую итерацию
