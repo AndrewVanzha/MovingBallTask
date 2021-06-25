@@ -50,6 +50,14 @@ h1 {
   height: 50px;
   border-radius: 50%;
   background-color: var(--red);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.center-ball-position {
+  width: 2px;
+  height: 2px;
+  background-color: var(--indigo);
 }
 .ping-message {
   display: none;

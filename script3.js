@@ -14,7 +14,7 @@ let ballObject = {
 };
 //let ballVector = new Vector();
 let ballVelocity = new Vector();
-let barrierT1 = new Vector(200, 200); 
+let barrierT1 = new Vector(200, 200); // координаты точек треугольника - препятствия
 let barrierT2 = new Vector(50, 300); 
 let barrierT3 = new Vector(300, 400); 
 let rejectVelocity = {
@@ -134,14 +134,75 @@ let findCurvePushParams = (pushCoords, centerCoords) => { // find initial push p
   return params;
 }
 
+let findCollision = (newParticle, oldParticle) => {
+  let oldBallVector = new Vector(oldParticle.x, oldParticle.y);
+  let newBallVector = new Vector(newParticle.x, newParticle.y);
+  let aux = new Vector();
+  const eps = .009;
+  let closeToBorder;
+  let ballPosition;
+
+  // приближение к барьеру T1 - T2
+  closeToBorder = crossTriangleBorder(oldBallVector, barrierT1, barrierT2);  // критерий умножения векторов
+  closeToBorder -= crossTriangleBorder(newBallVector, barrierT1, barrierT2);
+
+  aux = subsractVectorToVector(barrierT2, barrierT1);  // критерий знака скалярного произведения
+  ballPosition = scalarMultiplyVectorToVector(subsractVectorToVector(newBallVector, barrierT1), aux);
+  ballPosition *= scalarMultiplyVectorToVector(subsractVectorToVector(barrierT2, newBallVector), aux);
+
+  if(closeToBorder <= eps && ballPosition >= 0) {
+    // намечается пересечение барьера T1 - T2
+    console.log(closeToBorder);
+    console.log(ballPosition);
+    console.log('T1 - T2');
+    clearInterval(timerId);
+    stopMove = true;
+  }
+
+  // приближение к барьеру T2 - T3
+  closeToBorder = crossTriangleBorder(oldBallVector, barrierT2, barrierT3);  // критерий умножения векторов
+  closeToBorder -= crossTriangleBorder(newBallVector, barrierT2, barrierT3);
+
+  aux = subsractVectorToVector(barrierT3, barrierT2);  // критерий знака скалярного произведения
+  ballPosition = scalarMultiplyVectorToVector(subsractVectorToVector(newBallVector, barrierT2), aux);
+  ballPosition *= scalarMultiplyVectorToVector(subsractVectorToVector(barrierT3, newBallVector), aux);
+
+  if(closeToBorder <= eps && ballPosition >= 0) {
+    // намечается пересечение барьера T2 - T3
+    console.log(closeToBorder);
+    console.log(ballPosition);
+    console.log('T2 - T3');
+    clearInterval(timerId);
+    stopMove = true;
+  }
+
+  // приближение к барьеру T3 - T1
+  closeToBorder = crossTriangleBorder(oldBallVector, barrierT3, barrierT1);  // критерий умножения векторов
+  closeToBorder -= crossTriangleBorder(newBallVector, barrierT3, barrierT1);
+
+  aux = subsractVectorToVector(barrierT1, barrierT3);  // критерий знака скалярного произведения
+  ballPosition = scalarMultiplyVectorToVector(subsractVectorToVector(newBallVector, barrierT3), aux);
+  ballPosition *= scalarMultiplyVectorToVector(subsractVectorToVector(barrierT1, newBallVector), aux);
+
+  if(closeToBorder <= eps && ballPosition >= 0) {
+    // намечается пересечение барьера T3 - T1
+    console.log(closeToBorder);
+    console.log(ballPosition);
+    console.log('T3 - T1');
+    clearInterval(timerId);
+    stopMove = true;
+  }
+
+}
+
 let calculateNextStep = (oldParticle) => { // рассчитываю следующую итерацию
   let velocity = new Vector();
   let newParticle = new Particle();
-  //console.log('calculateNextStep');
   let gridX0 = fieldObject.borderLeft + ballObject.radius; // границы поля
   let gridY0 = fieldObject.borderTop + ballObject.radius;
   let gridX1 = fieldObject.borderRight - ballObject.radius;
   let gridY1 = fieldObject.borderBottom - ballObject.radius;
+  //console.log('calculateNextStep');
 
   let dx = oldParticle.vx * tt; // прирост координаты
   newParticle.x = oldParticle.x + dx; //
@@ -181,13 +242,11 @@ let calculateNextStep = (oldParticle) => { // рассчитываю следу�
     velocity.x = -oldParticle.vx;
     velocity.y = -oldParticle.vy;
   }
-
-  //console.log(curvePoint);
   //alert('A!');
   newParticle.vx = velocity.x;
   newParticle.vy = velocity.y;
 
-  //findCollision(newParticle, oldParticle); // определяю столкновения с помехой
+  findCollision(newParticle, oldParticle); // определяю столкновения с помехой
 
   return newParticle;
 }
@@ -219,7 +278,6 @@ let startMoveBall = (obj, clickVector, startBallVector) => { // движение
   ballVector.x = startBallVector.x + dx; // 
   let dy = -parabParams.vy * parabParams.sinF * tt;
   ballVector.y = startBallVector.y + dy; // 
-  //console.log(currentPoint);
   ballParticle.x = ballVector.x;
   ballParticle.y = ballVector.y;
   ballParticle.vx = parabParams.vx;
