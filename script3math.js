@@ -53,22 +53,31 @@ let multiplyMatrixToVector = (matrix, vector) => { // умножение мат�
   return mult;
 }
 
-let crossTriangleBorder = (ballCoords, triangleVector1, triangleVector2) => {
-  let res = 0; // минимизировать R * T2 - T1 * T2 + T1 * R (векторные произведения)
-  res = vectorMultiplyVectorToVector(ballCoords, triangleVector2);
-  res -= vectorMultiplyVectorToVector(triangleVector1, triangleVector2);
-  res += vectorMultiplyVectorToVector(triangleVector1, ballCoords);
+let crossTriangleBorder = (ballCoords, triangleVector1, triangleVector2) => { // не пошла
+  let a = new Vector();
+  let b = new Vector();
+  let res = 0; // минимизировать (R - T1) * (T2 - R) (векторное произведение)
+  a = subsractVectorToVector(ballCoords, triangleVector1);
+  b = subsractVectorToVector(triangleVector2, ballCoords);
+  res = vectorMultiplyVectorToVector(a, b);
   return res;
 }
 
-let rejectVectorInCollision = (velocity, triangleVector1, triangleVector2) => {
-  let c = new Vector();
-  let res = new Vector();
-  c = subsractVectorToVector(triangleVector1, triangleVector2); // c = T2 - T1
-  let L = scalarMultiplyVectorToVector(velocity, c);    // L = v . c
-  let du = 2 * L / (scalarMultiplyVectorToVector(c, c));
-  let cc = multiplyScalarToVector(du, c);   // 2 * L / c2 . c - v
-  res = subsractVectorToVector(cc, vector);
+let rejectVectorInCollision = (oldParticle, vc) => {  // calculate particle velocity after collision with vc
+  let realParticle = new Particle();
+  let oldBallVelocity = new Vector(oldParticle.vx, oldParticle.vy);
+  let vu = new Vector();
+  let aux;
+  let L;
 
-  return res;
+  realParticle.x = oldParticle.x;  // stay on place
+  realParticle.y = oldParticle.y;
+  L = scalarMultiplyVectorToVector(oldBallVelocity, vc);  // L = (v_old . vc)
+  aux = 2 * L / scalarMultiplyVectorToVector(vc, vc);     // v_new = 2 * L / (vc . vc) . vc - v_old
+  vu = multiplyScalarToVector(aux, vc);
+  vu = subsractVectorToVector(vu, oldBallVelocity);
+  realParticle.vx = vu.x;
+  realParticle.vy = vu.y;
+
+  return realParticle;
 }

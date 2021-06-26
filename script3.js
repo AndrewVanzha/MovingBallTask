@@ -14,9 +14,9 @@ let ballObject = {
 };
 //let ballVector = new Vector();
 let ballVelocity = new Vector();
-let barrierT1 = new Vector(200, 200); // координаты точек треугольника - препятствия
+let barrierT1 = new Vector(220, 200); // координаты точек треугольника - препятствия
 let barrierT2 = new Vector(50, 300); 
-let barrierT3 = new Vector(300, 400); 
+let barrierT3 = new Vector(270, 350); 
 let barrierObject = {
   'T1': new Vector,
   'T2': new Vector,
@@ -132,20 +132,21 @@ let findCurvePushParams = (pushCoords, centerCoords) => { // find initial push p
   return params;
 }
 
-let findCollision = (newParticle, oldParticle) => {
-  let oldBallVector = new Vector(oldParticle.x, oldParticle.y);
+let doCollision = (newParticle, oldParticle) => {
+  let realParticle = new Particle();
   let newBallVector = new Vector(newParticle.x, newParticle.y);
   let va = new Vector();
   let vb = new Vector();
   let vc = new Vector();
-  const eps = 150;
+  const eps = 700;
   let closeToBorder;
   let ballPosition;
   let aux;
+  realParticle = newParticle;
 
   // приближение к барьеру T1 - T2
   va = subsractVectorToVector(newBallVector, barrierObject.T1);   // критерий умножения векторов
-  vb = subsractVectorToVector(barrierObject.T2, newBallVector);
+  vb = subsractVectorToVector(barrierObject.T2, newBallVector);   // | va * vb | < eps
   aux = vectorMultiplyVectorToVector(va, vb);
   closeToBorder = aux > 0? aux : -aux;
   //console.log(barrierObject.T1);
@@ -153,67 +154,67 @@ let findCollision = (newParticle, oldParticle) => {
   //console.log(closeToBorder);
 
   vc = subsractVectorToVector(barrierObject.T2, barrierObject.T1);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(va, vc);
+  ballPosition = scalarMultiplyVectorToVector(va, vc);    // (va . vc) . (vb . vc) > 0
   ballPosition *= scalarMultiplyVectorToVector(vb, vc);
 
   if(closeToBorder <= eps && ballPosition >= 0) {
     // намечается пересечение барьера T1 - T2
     console.log('T1 - T2');
     console.log(closeToBorder);
-    console.log(ballPosition);
-    console.log(newParticle);
-    console.log(barrierObject.T1);
-    console.log(barrierObject.T2);
-    clearInterval(timerId);
-    stopMove = true;
+    //console.log(ballPosition);
+    //console.log(newParticle);
+    //clearInterval(timerId);
+    //stopMove = true;
+    realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
   }
 
   // приближение к барьеру T2 - T3
   va = subsractVectorToVector(newBallVector, barrierObject.T2);   // критерий умножения векторов
-  vb = subsractVectorToVector(barrierObject.T3, newBallVector);
+  vb = subsractVectorToVector(barrierObject.T3, newBallVector);   // | va * vb | < eps
   aux = vectorMultiplyVectorToVector(va, vb);
   closeToBorder = aux > 0? aux : -aux;
 
   vc = subsractVectorToVector(barrierObject.T3, barrierObject.T2);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(va, vc);
+  ballPosition = scalarMultiplyVectorToVector(va, vc);    // (va . vc) . (vb . vc) > 0
   ballPosition *= scalarMultiplyVectorToVector(vb, vc);
 
   if(closeToBorder <= eps && ballPosition >= 0) {
     // намечается пересечение барьера T2 - T3
     console.log('T2 - T3');
     console.log(closeToBorder);
-    console.log(ballPosition);
-    console.log(newParticle);
-    console.log(barrierObject.T2);
-    console.log(barrierObject.T3);
-    clearInterval(timerId);
-    stopMove = true;
+    //console.log(ballPosition);
+    //console.log(newParticle);
+    //clearInterval(timerId);
+    //stopMove = true;
+    realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
   }
 
   // приближение к барьеру T3 - T1
   va = subsractVectorToVector(newBallVector, barrierObject.T3);   // критерий умножения векторов
-  vb = subsractVectorToVector(barrierObject.T1, newBallVector);
+  vb = subsractVectorToVector(barrierObject.T1, newBallVector);   // | va * vb | < eps
   aux = vectorMultiplyVectorToVector(va, vb);
   closeToBorder = aux > 0? aux : -aux;
 
   vc = subsractVectorToVector(barrierObject.T1, barrierObject.T3);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(va, vc);
+  ballPosition = scalarMultiplyVectorToVector(va, vc);    // (va . vc) . (vb . vc) > 0
   ballPosition *= scalarMultiplyVectorToVector(vb, vc);
 
   if(closeToBorder <= eps && ballPosition >= 0) {
     // намечается пересечение барьера T3 - T1
     console.log('T3 - T1');
     console.log(closeToBorder);
-    console.log(ballPosition);
-    console.log(newParticle);
-    console.log(barrierObject.T2);
-    console.log(barrierObject.T3);
-    clearInterval(timerId);
-    stopMove = true;
+    //console.log(ballPosition);
+    //console.log(newParticle);
+    //clearInterval(timerId);
+    //stopMove = true;
+    realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
   }
+
+  return realParticle;
 }
 
 let calculateNextStep = (oldParticle) => { // рассчитываю следующую итерацию
+  let position = new Vector();
   let velocity = new Vector();
   let newParticle = new Particle();
   let gridX0 = fieldObject.borderLeft + ballObject.radius; // границы поля
@@ -223,48 +224,66 @@ let calculateNextStep = (oldParticle) => { // рассчитываю следу�
   //console.log('calculateNextStep');
 
   let dx = oldParticle.vx * tt; // прирост координаты
-  newParticle.x = oldParticle.x + dx; //
+  position.x = oldParticle.x + dx; //
   let dy = oldParticle.vy * tt;
-  newParticle.y = oldParticle.y + dy;
+  position.y = oldParticle.y + dy;
 
   let dvx = 0; //   прирост скорости
   velocity.x = oldParticle.vx + dvx;
   let dvy = gg * tt; // 
   velocity.y = oldParticle.vy + dvy;
 
-  if(newParticle.x <= gridX0) { // to left
-    velocity.x = -oldParticle.vx;
+  if(position.x <= gridX0) { // cross left
+    velocity.x = -oldParticle.vx; // move back
+    position.x = oldParticle.x; // stay on place
+    position.y = oldParticle.y;
   }
-  if(newParticle.x >= gridX1) { // to right
-    velocity.x = -oldParticle.vx;
+  if(position.x >= gridX1) { // cross right
+    velocity.x = -oldParticle.vx; // move back
+    position.x = oldParticle.x; // stay on place
+    position.y = oldParticle.y;
   }
-  if(newParticle.y <= gridY0) { // to top
+  if(position.y <= gridY0) { // cross top
+    velocity.y = -oldParticle.vy; // move back
+    position.x = oldParticle.x; // stay on place
+    position.y = oldParticle.y;
+  }
+  if(position.y >= gridY1) { // cross bottom
+    velocity.y = -oldParticle.vy; // move back
+    position.x = oldParticle.x; // stay on place
+    position.y = oldParticle.y;
+  }
+  if(position.x <= gridX0 && position.y <= gridY0) { // to left top
+    velocity.x = -oldParticle.vx; // move back
     velocity.y = -oldParticle.vy;
+    position.x = oldParticle.x; // stay on place
+    position.y = oldParticle.y;
   }
-  if(newParticle.y >= gridY1) { // to bottom
+  if(position.x >= gridX1 && position.y <= gridY0) { // to right top
+    velocity.x = -oldParticle.vx; // move back
     velocity.y = -oldParticle.vy;
+    position.x = oldParticle.x; // stay on place
+    position.y = oldParticle.y;
   }
-  if(newParticle.x <= gridX0 && newParticle.y <= gridY0) { // to left top
-    velocity.x = -oldParticle.vx;
+  if(position.x <= gridX0 && position.y >= gridY1) { // to left bottom
+    velocity.x = -oldParticle.vx; // move back
     velocity.y = -oldParticle.vy;
+    position.x = oldParticle.x; // stay on place
+    position.y = oldParticle.y;
   }
-  if(newParticle.x >= gridX1 && newParticle.y <= gridY0) { // to right top
-    velocity.x = -oldParticle.vx;
+  if(position.x >= gridX1 && position.y >= gridY1) { // to right bottom
+    velocity.x = -oldParticle.vx; // move back
     velocity.y = -oldParticle.vy;
-  }
-  if(newParticle.x <= gridX0 && newParticle.y >= gridY1) { // to left bottom
-    velocity.x = -oldParticle.vx;
-    velocity.y = -oldParticle.vy;
-  }
-  if(newParticle.x >= gridX1 && newParticle.y >= gridY1) { // to right bottom
-    velocity.x = -oldParticle.vx;
-    velocity.y = -oldParticle.vy;
+    position.x = oldParticle.x; // stay on place
+    position.y = oldParticle.y;
   }
   //alert('A!');
+  newParticle.x = position.x;
+  newParticle.y = position.y;
   newParticle.vx = velocity.x;
   newParticle.vy = velocity.y;
 
-  findCollision(newParticle, oldParticle); // определяю столкновения с помехой
+  newParticle = doCollision(newParticle, oldParticle); // определяю столкновения с помехой
 
   return newParticle;
 }
