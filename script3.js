@@ -135,78 +135,32 @@ let findCurvePushParams = (pushCoords, centerCoords) => { // find initial push p
 let doCollision = (newParticle, oldParticle) => {
   let realParticle = new Particle();
   let newBallVector = new Vector(newParticle.x, newParticle.y);
-  let va = new Vector();
-  let vb = new Vector();
   let vc = new Vector();
   const eps = 700;
-  let closeToBorder;
-  let ballPosition;
-  let aux;
+
   realParticle = newParticle;
 
   // приближение к барьеру T1 - T2
-  va = subsractVectorToVector(newBallVector, barrierObject.T1);   // критерий умножения векторов
-  vb = subsractVectorToVector(barrierObject.T2, newBallVector);   // | va * vb | < eps
-  aux = vectorMultiplyVectorToVector(va, vb);
-  closeToBorder = aux > 0? aux : -aux;
-  //console.log(barrierObject.T1);
-  //console.log(newBallVector);
-  //console.log(closeToBorder);
-
-  vc = subsractVectorToVector(barrierObject.T2, barrierObject.T1);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(va, vc);    // (va . vc) . (vb . vc) > 0
-  ballPosition *= scalarMultiplyVectorToVector(vb, vc);
-
-  if(closeToBorder <= eps && ballPosition >= 0) {
+  if(crossTriangleBorder(newBallVector, barrierObject.T1, barrierObject.T2, eps)) {
     // намечается пересечение барьера T1 - T2
     console.log('T1 - T2');
-    console.log(closeToBorder);
-    //console.log(ballPosition);
-    //console.log(newParticle);
-    //clearInterval(timerId);
-    //stopMove = true;
+    vc = subsractVectorToVector(barrierObject.T2, barrierObject.T1);  // 
     realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
   }
 
   // приближение к барьеру T2 - T3
-  va = subsractVectorToVector(newBallVector, barrierObject.T2);   // критерий умножения векторов
-  vb = subsractVectorToVector(barrierObject.T3, newBallVector);   // | va * vb | < eps
-  aux = vectorMultiplyVectorToVector(va, vb);
-  closeToBorder = aux > 0? aux : -aux;
-
-  vc = subsractVectorToVector(barrierObject.T3, barrierObject.T2);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(va, vc);    // (va . vc) . (vb . vc) > 0
-  ballPosition *= scalarMultiplyVectorToVector(vb, vc);
-
-  if(closeToBorder <= eps && ballPosition >= 0) {
+  if(crossTriangleBorder(newBallVector, barrierObject.T2, barrierObject.T3, eps)) {
     // намечается пересечение барьера T2 - T3
     console.log('T2 - T3');
-    console.log(closeToBorder);
-    //console.log(ballPosition);
-    //console.log(newParticle);
-    //clearInterval(timerId);
-    //stopMove = true;
+    vc = subsractVectorToVector(barrierObject.T3, barrierObject.T2);  // 
     realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
   }
 
   // приближение к барьеру T3 - T1
-  va = subsractVectorToVector(newBallVector, barrierObject.T3);   // критерий умножения векторов
-  vb = subsractVectorToVector(barrierObject.T1, newBallVector);   // | va * vb | < eps
-  aux = vectorMultiplyVectorToVector(va, vb);
-  closeToBorder = aux > 0? aux : -aux;
-
-  vc = subsractVectorToVector(barrierObject.T1, barrierObject.T3);  // критерий знака скалярного произведения
-  ballPosition = scalarMultiplyVectorToVector(va, vc);    // (va . vc) . (vb . vc) > 0
-  ballPosition *= scalarMultiplyVectorToVector(vb, vc);
-
-  if(closeToBorder <= eps && ballPosition >= 0) {
+  if(crossTriangleBorder(newBallVector, barrierObject.T3, barrierObject.T1, eps)) {
     // намечается пересечение барьера T3 - T1
     console.log('T3 - T1');
-    console.log(closeToBorder);
-    //console.log(ballPosition);
-    //console.log(newParticle);
-    //clearInterval(timerId);
-    //stopMove = true;
+    vc = subsractVectorToVector(barrierObject.T1, barrierObject.T3);  // 
     realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
   }
 

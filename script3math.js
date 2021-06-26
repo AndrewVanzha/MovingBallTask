@@ -53,14 +53,29 @@ let multiplyMatrixToVector = (matrix, vector) => { // умножение мат�
   return mult;
 }
 
-let crossTriangleBorder = (ballCoords, triangleVector1, triangleVector2) => { // не пошла
-  let a = new Vector();
-  let b = new Vector();
-  let res = 0; // минимизировать (R - T1) * (T2 - R) (векторное произведение)
-  a = subsractVectorToVector(ballCoords, triangleVector1);
-  b = subsractVectorToVector(triangleVector2, ballCoords);
-  res = vectorMultiplyVectorToVector(a, b);
-  return res;
+let crossTriangleBorder = (newBallVector, triangleVector1, triangleVector2, eps) => { // find collision
+  let va = new Vector();
+  let vb = new Vector();
+  let vc = new Vector();
+  let ballPosition;
+  let closeToBorder;
+  let aux;
+
+  va = subsractVectorToVector(newBallVector, triangleVector1);   // критерий умножения векторов
+  vb = subsractVectorToVector(triangleVector2, newBallVector);   // | va * vb | < eps
+  aux = vectorMultiplyVectorToVector(va, vb);
+  closeToBorder = aux > 0? aux : -aux;
+
+  vc = subsractVectorToVector(barrierObject.T2, barrierObject.T1);  // критерий знака скалярного произведения
+  ballPosition = scalarMultiplyVectorToVector(va, vc);    // (va . vc) . (vb . vc) > 0
+  ballPosition *= scalarMultiplyVectorToVector(vb, vc);
+
+  if(closeToBorder <= eps && ballPosition >= 0) {
+    // намечается пересечение барьера T1 - T2
+    console.log(closeToBorder);
+    return true;
+  }
+  return false;
 }
 
 let rejectVectorInCollision = (oldParticle, vc) => {  // calculate particle velocity after collision with vc
