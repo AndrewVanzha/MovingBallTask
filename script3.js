@@ -14,8 +14,8 @@ let ballObject = {
 };
 //let ballVector = new Vector();
 let ballVelocity = new Vector();
-let barrierT1 = new Vector(220, 200); // координаты точек треугольника - препятствия
-let barrierT2 = new Vector(50, 300); 
+let barrierT1 = new Vector(240, 220); // координаты точек треугольника - препятствия
+let barrierT2 = new Vector(90, 300); 
 let barrierT3 = new Vector(270, 350); 
 let barrierObject = {
   'T1': new Vector,
@@ -132,36 +132,87 @@ let findCurvePushParams = (pushCoords, centerCoords) => { // find initial push p
   return params;
 }
 
-let doCollision = (newParticle, oldParticle) => {
+let ballCrossTriangleBorder = (newBallVector, triangleVector1, triangleVector2, eps) => { // find collision
+  let vR = new Vector();
+  let arrVr = Array();
+  let qw = Math.sqrt(2) / 2;
+  let sw = Math.sqrt(3) / 2;
+  let rr = ballObject.radius;
+  let cross = false;
+
+  let vr0 = new Vector(rr, 0);   // опрос ближайших окрестностей мяча
+  arrVr.push(vr0);
+  //let vr1 = new Vector(qw*rr, -qw*rr);
+  let vr1 = new Vector(sw*rr, -.5*rr);
+  arrVr.push(vr1);
+  //let vr2 = new Vector(0, -rr);
+  let vr2 = new Vector(.5*rr, -sw*rr);
+  arrVr.push(vr2);
+  //let vr3 = new Vector(-qw*rr, -qw*rr);
+  let vr3 = new Vector(0, -rr);
+  arrVr.push(vr3);
+  //let vr4 = new Vector(-rr, 0);
+  let vr4 = new Vector(-.5*rr, -sw*rr);
+  arrVr.push(vr4);
+  //let vr5 = new Vector(-qw*rr, qw*rr);
+  let vr5 = new Vector(-sw*rr, -.5*rr);
+  arrVr.push(vr5);
+  //let vr6 = new Vector(0, rr);
+  let vr6 = new Vector(-rr, 0);
+  arrVr.push(vr6);
+  //let vr7 = new Vector(qw*rr, qw*rr);
+  let vr7 = new Vector(-sw*rr, .5*rr);
+  arrVr.push(vr7);
+  let vr8 = new Vector(-.5*rr, sw*rr);
+  arrVr.push(vr8);
+  let vr9 = new Vector(0, rr);
+  arrVr.push(vr9);
+  let vr10 = new Vector(.5*rr, sw*rr);
+  arrVr.push(vr10);
+  let vr11 = new Vector(sw*rr, .5*rr);
+  arrVr.push(vr11);
+
+  for(let ii=0; ii<arrVr.length; ii++) {
+    vR = addVectorToVector(newBallVector, arrVr[ii]);
+    cross = crossTriangleBorder(vR, triangleVector1, triangleVector2, eps);
+    if(cross) break;
+  }
+  return cross;
+}
+
+let doCollision = (newParticle, oldParticle) => { // рассчет параметров движения при столкновении с чем-либо
   let realParticle = new Particle();
   let newBallVector = new Vector(newParticle.x, newParticle.y);
   let vc = new Vector();
-  const eps = 700;
+  const eps = 500;
 
   realParticle = newParticle;
 
   // приближение к барьеру T1 - T2
-  if(crossTriangleBorder(newBallVector, barrierObject.T1, barrierObject.T2, eps)) {
+  if(ballCrossTriangleBorder(newBallVector, barrierObject.T1, barrierObject.T2, eps)) {
     // намечается пересечение барьера T1 - T2
     console.log('T1 - T2');
     vc = subsractVectorToVector(barrierObject.T2, barrierObject.T1);  // 
     realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
+    return realParticle;
   }
 
   // приближение к барьеру T2 - T3
-  if(crossTriangleBorder(newBallVector, barrierObject.T2, barrierObject.T3, eps)) {
+  if(ballCrossTriangleBorder(newBallVector, barrierObject.T2, barrierObject.T3, eps)) {
     // намечается пересечение барьера T2 - T3
     console.log('T2 - T3');
     vc = subsractVectorToVector(barrierObject.T3, barrierObject.T2);  // 
     realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
+    return realParticle;
   }
 
   // приближение к барьеру T3 - T1
-  if(crossTriangleBorder(newBallVector, barrierObject.T3, barrierObject.T1, eps)) {
+  if(ballCrossTriangleBorder(newBallVector, barrierObject.T3, barrierObject.T1, eps)) {
     // намечается пересечение барьера T3 - T1
     console.log('T3 - T1');
     vc = subsractVectorToVector(barrierObject.T1, barrierObject.T3);  // 
     realParticle = rejectVectorInCollision(oldParticle, vc);  // calculate velocity after collision
+    return realParticle;
   }
 
   return realParticle;
