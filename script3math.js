@@ -72,7 +72,7 @@ let crossTriangleBorder = (newBallVector, triangleVector1, triangleVector2, eps)
 
   if(closeToBorder <= eps && ballPosition >= 0) {
     // намечается пересечение барьера T1 - T2
-    console.log(closeToBorder);
+    //console.log(closeToBorder);
     return true;
   }
   return false;

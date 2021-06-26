@@ -22,10 +22,6 @@ let barrierObject = {
   'T2': new Vector,
   'T3': new Vector,
 }
-let rejectVelocity = {
-  'vx': 0,
-  'vy': 0,
-};
 let timerId; // ball render timer id
 let pushForce = .01 * 9;
 let tt = pushForce; // параметрическое время
@@ -34,7 +30,7 @@ let ix = 0;
 let stopMove = false; // признак останова цикла
 //window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
-let duration = 10; // milliseconds
+const duration = 10; // milliseconds
 const stepX = .01; // множитель к шагу по х
 const gg = .75; // ускорение поля
 
@@ -106,30 +102,21 @@ let findBallPosition = (obj) => { // find current ball position
   return ballVector;
 }
 
-let findCurvePushParams = (pushCoords, centerCoords) => { // find initial push parameters
-  let params = { // a * x2 + b * x + c
-    'cosF': 1,
-    'sinF': 0,
-    'v0': 10, // pixels
-    'h0': 0,
-    'x0': 0,
-    'vx': 10,
-    'vy': 0,
-  };
-  //console.log(centerCoords);
-  if(Math.abs(pushCoords.x-centerCoords.x) > 1.01) { // толчок не слишком близко к центру шара
-    let vv = (pushCoords.x - centerCoords.x) * (pushCoords.x - centerCoords.x);
-    vv += (pushCoords.y - centerCoords.y) * (pushCoords.y - centerCoords.y);
-    params.v0 = Math.sqrt(vv);
-    params.cosF = (pushCoords.x - centerCoords.x) / params.v0;
-    params.sinF = (centerCoords.y - pushCoords.y) / params.v0;
-    params.h0 = centerCoords.y;
-    params.x0 = centerCoords.x;
-    params.vx = params.v0 * params.cosF;
-    params.vy = -params.v0 * params.sinF;
-  }
-  //console.log(params);
-  return params;
+let findPushParams = (pushVector, centerCoords, speedScale) => { // find initial push parameters
+  let ballParticle = new Particle();
+  let ballVector = new Vector();
+  let ballVelocity = new Vector();
+
+  ballVector = addVectorToVector(centerCoords, centerCoords); // vR1 = vR0 + vR0 - vPush
+  ballVector = subsractVectorToVector(ballVector, pushVector);
+  ballVelocity = subsractVectorToVector(centerCoords, pushVector); // v = sS . (vR0 - vPush)
+  ballVelocity = multiplyScalarToVector(speedScale, ballVelocity);
+  ballParticle.x = ballVector.x;  // начальный толчок
+  ballParticle.y = ballVector.y;
+  ballParticle.vx = ballVelocity.x;
+  ballParticle.vy = ballVelocity.y;
+
+  return ballParticle;
 }
 
 let ballCrossTriangleBorder = (newBallVector, triangleVector1, triangleVector2, eps) => { // find collision
@@ -309,30 +296,19 @@ let trackBallMovement = (obj, ballVector) => { // render ball movement
 }
 
 let startMoveBall = (obj, clickVector, startBallVector) => { // движение после начального толчка
-  let ballVector = new Vector();
-  let newBallVector = new Vector();
   let ballParticle = new Particle();
-  let parabParams;
+  const speedScale = 2; // масштаб начальной скорости
   
-  parabParams = findCurvePushParams(clickVector, startBallVector);
-  
-  let dx = parabParams.vx * parabParams.cosF * tt; // вначале
-  ballVector.x = startBallVector.x + dx; // 
-  let dy = -parabParams.vy * parabParams.sinF * tt;
-  ballVector.y = startBallVector.y + dy; // 
-  ballParticle.x = ballVector.x;
-  ballParticle.y = ballVector.y;
-  ballParticle.vx = parabParams.vx;
-  ballParticle.vy = parabParams.vy;
+  ballParticle = findPushParams(clickVector, startBallVector, speedScale);  // начальный толчок
 
   timerId = setInterval(function() {
     if (stopMove) {
-      console.log('render expired');
+      console.log('render stop');
       clearInterval(timerId);
     } else {
       ballParticle = calculateNextStep(ballParticle);
       trackBallMovement(obj, ballParticle);
-      console.log('move');
+      //console.log('move');
     }
   }, duration);
   
@@ -343,7 +319,6 @@ $(document).ready(function() {
   let ballElement = document.querySelector('.ballq');
   let barrierElement = document.querySelector('.barrier-field'); 
   let ballVector = new Vector();
-  //console.log(ballElement);
   //console.log(fieldElement);
   
   detectField(fieldElement);
@@ -361,10 +336,6 @@ $(document).ready(function() {
 
   $(ballElement).click(function(elem) {
     let clickVector = new Vector(elem.pageX, elem.pageY); // координаты клика
-    let centerCoords = {
-      'x': ballObject.centerX,
-      'y': ballObject.centerY
-    }
     let pos = $(this).offset();  // координаты верхней правой точки мяча
     $('.duration').val(duration);
     $('.smooth').val(tt);
@@ -374,7 +345,7 @@ $(document).ready(function() {
       stopMove = true;
       setTimeout(() => {
         stopMove = false;
-        $('.stop-button').click(function() { // остановка движения
+        $('.stop-button').click(function() { // остановка движения по кнопке
           clearInterval(timerId);
           console.log('stop');
           stopMove = true;
@@ -388,7 +359,7 @@ $(document).ready(function() {
         startMoveBall(ballElement, clickVector, ballVector);
       }, 100);
     } else {   // первый толчок
-      $('.stop-button').click(function() { // остановка движения
+      $('.stop-button').click(function() { // остановка движения по кнопке
         clearInterval(timerId);
         console.log('stop');
         stopMove = true;
