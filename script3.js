@@ -337,8 +337,9 @@ $(document).ready(function() {
   $(ballElement).click(function(elem) {
     let clickVector = new Vector(elem.pageX, elem.pageY); // координаты клика
     let pos = $(this).offset();  // координаты верхней правой точки мяча
-    $('.duration').val(duration);
-    $('.smooth').val(tt);
+    $('.duration').prop( "disabled", true );
+    $('.smooth').prop( "disabled", true );
+    $('.data-button').css("opacity","0.5");;
     if(timerId !== undefined) { // мяч уже в движении
       clearInterval(timerId);
       console.log('suspend');
