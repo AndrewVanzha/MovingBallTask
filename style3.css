@@ -84,7 +84,35 @@ h1 {
   }
 }
 .barrier-field {}
-
+.arrow {
+  position: absolute;
+  left: -15px;
+  top: 20px;
+}
+.arrow-down {
+  width: 5px;
+  height: 100px;
+  background-color: chocolate;
+}
+.arrow-down::before {
+  content: "^";
+  position: absolute;
+  left: -7px;
+  top: 76px;
+  transform: rotate(180deg);
+  font-size: 26px;
+  font-weight: bold;
+  color: chocolate;
+}
+.arrow-down::after {
+  content: "g";
+  position: absolute;
+  left: -5px;
+  top: 95px;
+  font-size: 24px;
+  font-weight: bold;
+  color: chocolate;
+}
 /*
 @media (max-width: 992px) {
   .header-block div h1 {
