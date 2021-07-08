@@ -30,7 +30,7 @@ let ix = 0;
 let stopMove = false; // признак останова цикла
 //window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
-const duration = 10; // milliseconds
+const duration = 25; // milliseconds
 const stepX = .01; // множитель к шагу по х
 const gg = .75; // ускорение поля
 
